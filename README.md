@@ -1,25 +1,66 @@
-# Spring Academy Sample Course Code
+# Building and running a GraalVM native application
 
-This repository represents the structure of the [real-world simulated project](https://github.com/vmware-tanzu-learning/spring-academy/blob/main/docs/lab-authoring-style-guide.md#remember-youre-building-a-real-application) used to teach Spring Academy leaners concepts taught in a course. 
+The codebase was prepared as follows
+- Go to https://start.spring.io/#!dependencies=native
+- Add the Spring Web dependency
+- Generate and extract the project
+- Create a basic REST endpoint (`SimpleEndpointController` class)
 
-This repo is a companion to the [Spring Academy Sample Course repository](https://github.com/vmware-tanzu-learning/spring-academy-sample-course).
+What **you** need to do is as follows:
 
-## How to use
+## Build a Docker image containing GraalVM
+Copy the Dockerfile from that `native-*` directory, according to your architecture
+```
+cp native-x86/Dockerfile .
+```
 
-- [ ] Duplicate this repository and use it as a basis or reference for your own course code repository.
-- [ ] Set the visibility of this repo to Public
-- [ ] Make sure `scripts/stage-codebase.sh` has executable permissions
-- [ ] Create and push a branch named `prod`
+Build your Docker image:
+```
+docker build -t native-image .
+```
 
-### Branches and environments 
+## Build and run the native image
 
-- `main` - Commits to this branch will automatically be deployed to Spring Academy **Staging**
-- `prod` - Commits will be used for Spring Academy. Deploys are a manual process at this time. 
+Run the Docker container:
+```
+docker run -it -p 8080:8080 -v $(pwd):/mnt/workspace:delegated native-image
+```
+From within the container, check native-image is installed and working:
 
-## Documentation
+```
+native-image --version
+```
 
-Learn more about building courese and labs in the [Spring Academy Contribution Guide](https://github.com/vmware-tanzu-learning/spring-academy/blob/main/CONTRIBUTING.md).
+Also observe the directory from your local machine is available within the image also:
+```console
+root@ad839a8cd71e:/mnt/workspace# ls
+Dockerfile  LICENSE.txt  build         gradle   gradlew.bat  native-x86  settings.gradle
+HELP.md     README.md    build.gradle  gradlew  native-arm   scripts     src
+```
 
+## Build the application:
 
+Still from within the Docker container.
 
+Build ther application as a regular JVM app:
+```
+./gradlew build
+```
+
+Build the application as a native GraalVM app:
+(this will take much longer than the non-native image. Count on 2+ minutes)
+```
+./gradlew nativeCompile
+```
+
+## Run the native app
+```
+build/native/nativeCompile/demo-web-native
+```
+
+## Test the app
+
+__Note__ that port 8080 is exported from the Docker container to your local machine, so that you can contact the app that is running in the container from your local machine.
+
+From a browser on your local machine, navigate to [the test REST endpoint](http://localhost:8080/theanswer)
 
