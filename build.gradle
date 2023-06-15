@@ -25,10 +25,10 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
-graalvmNative {
-	binaries {
-		named("main") {
-			verbose.set(true)
-		}
-	}
-}
+//graalvmNative {
+//	binaries {
+//		named("main") {
+//			verbose.set(true)
+//		}
+//	}
+//}

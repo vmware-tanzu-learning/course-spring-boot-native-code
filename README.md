@@ -19,19 +19,19 @@ Build your Docker image:
 docker build -t native-image .
 ```
 
-## Build and run the native image
+## Run the image you just built
 
 Run the Docker container:
 ```
 docker run -it -p 8080:8080 -v $(pwd):/mnt/workspace:delegated native-image
 ```
-From within the container, check native-image is installed and working:
+From within the container, check that the `native-image` application is installed and working:
 
 ```
 native-image --version
 ```
 
-Also observe the directory from your local machine is available within the image also:
+Also, observe that the directory from your local machine is available within the image also:
 ```console
 root@ad839a8cd71e:/mnt/workspace# ls
 Dockerfile  LICENSE.txt  build         gradle   gradlew.bat  native-x86  settings.gradle
@@ -40,15 +40,16 @@ HELP.md     README.md    build.gradle  gradlew  native-arm   scripts     src
 
 ## Build the application:
 
-Still from within the Docker container.
+Still from within the Docker container, do the fo0llowing:
 
-Build ther application as a regular JVM app:
+Build the application as a regular JVM app:
+(TODO Do I need to do this really?)
 ```
 ./gradlew build
 ```
 
 Build the application as a native GraalVM app:
-(this will take much longer than the non-native image. Count on 2+ minutes)
+__Note__: This will take much longer than the non-native image. Count on 2+ minutes.
 ```
 ./gradlew nativeCompile
 ```
@@ -60,7 +61,14 @@ build/native/nativeCompile/demo-web-native
 
 ## Test the app
 
-__Note__ that port 8080 is exported from the Docker container to your local machine, so that you can contact the app that is running in the container from your local machine.
+__Note__ that port 8080 is exported from the Docker container to your local machine, so that you can contact the app that is running in the container from the machine from which you ran `docker run`.
 
-From a browser on your local machine, navigate to [the test REST endpoint](http://localhost:8080/theanswer)
+-either-: From a browser on your local machine, navigate to [the test REST endpoint](http://localhost:8080/the-answer)
 
+-or-: Use the command line, e.g. with the `curl` app:
+
+```console
+# curl http://localhost:8080/the-answer
+```
+
+You should receive the answer, which is 42.

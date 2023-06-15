@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class SimpleEndpointController {
 
-    @GetMapping("/theanswer")
+    @GetMapping("/the-answer")
     long getTheAnswer() {
         return 42;
     }
