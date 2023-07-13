@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <body>
+    <p th:text="${banner}" />
+    <ul>
+        <li th:each="cashcard : ${cashcards}" th:text="'id: ' + ${cashcard.id} + ', amount: ' + ${cashcard.amount} + ', owner:' + ${cashcard.owner.id}"></li>
+    </ul>
+  </body>
+</html>
