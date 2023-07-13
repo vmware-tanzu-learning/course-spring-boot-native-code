@@ -1,19 +1,17 @@
 package example.cashcard;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.util.FileCopyUtils;
+import org.springframework.web.bind.annotation.GetMapping;
 
-import java.net.URI;
-import java.security.Principal;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.stream.StreamSupport;
 
-@RestController
-@RequestMapping("/cashcards")
+@Controller
 public class CashCardController {
     private CashCardRepository cashCardRepository;
 
@@ -21,58 +19,20 @@ public class CashCardController {
         this.cashCardRepository = cashCardRepository;
     }
 
-    @GetMapping("/{requestedId}")
-    public ResponseEntity<CashCard> findById(@PathVariable Long requestedId, Principal principal) {
-        CashCard cashCard = findCashCard(requestedId, principal);
-        if (cashCard != null) {
-            return ResponseEntity.ok(cashCard);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    @GetMapping("/list")
+    public String findAll(Model model) {
+        List<CashCardDto> cashcards = cashCardRepository.findAll().stream()
+                .map(c -> new CashCardDto(c.id(), c.amount(),  new UserDto(c.owner()))).toList();
+        model.addAttribute("cashcards", cashcards);
+        return "list.html";
     }
 
-    @PostMapping
-    private ResponseEntity<Void> createCashCard(@RequestBody CashCard newCashCardRequest, UriComponentsBuilder ucb) {
-        CashCard savedCashCard = cashCardRepository.save(newCashCardRequest);
-        URI locationOfNewCashCard = ucb
-                .path("cashcards/{id}")
-                .buildAndExpand(savedCashCard.id())
-                .toUri();
-        return ResponseEntity.created(locationOfNewCashCard).build();
+    @GetMapping("/banner")
+    public String banner(Model model) throws IOException {
+        ClassPathResource resource = new ClassPathResource("cashcard-banner.txt");
+        String banner = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        model.addAttribute("banner", banner);
+        return "banner.html";
     }
 
-    @GetMapping
-    public ResponseEntity<List<CashCard>> findAll(Pageable pageable, Principal principal) {
-        Page<CashCard> page = cashCardRepository.findByOwner(principal.getName(),
-                PageRequest.of(
-                        pageable.getPageNumber(),
-                        pageable.getPageSize(),
-                        pageable.getSortOr(Sort.by(Sort.Direction.ASC, "amount"))
-                ));
-        return ResponseEntity.ok(page.getContent());
-    }
-
-    @PutMapping("/{requestedId}")
-    private ResponseEntity<Void> putCashCard(@PathVariable Long requestedId, @RequestBody CashCard cashCardUpdate, Principal principal) {
-        CashCard cashCard = findCashCard(requestedId, principal);
-        if (cashCard != null) {
-            CashCard updatedCashCard = new CashCard(requestedId, cashCardUpdate.amount(), principal.getName());
-            cashCardRepository.save(updatedCashCard);
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
-    }
-
-    @DeleteMapping("/{id}")
-    private ResponseEntity<Void> deleteCashCard(@PathVariable Long id, Principal principal) {
-        if (cashCardRepository.existsByIdAndOwner(id, principal.getName())) {
-            cashCardRepository.deleteById(id);
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
-    }
-
-    private CashCard findCashCard(Long requestedId, Principal principal) {
-        return cashCardRepository.findByIdAndOwner(requestedId, principal.getName());
-    }
 }
